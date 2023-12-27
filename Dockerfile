@@ -1,15 +1,22 @@
+# Use a multi-stage build to build the binary for different platforms
+FROM --platform=linux/amd64 alpine:latest AS amd64
+RUN apk add --no-cache curl && \
+  curl -L "https://temporal.download/cli/archive/latest?platform=linux&arch=amd64" -o /tmp/temporal_cli.tar.gz && \
+  tar -xzf /tmp/temporal_cli.tar.gz -C /tmp && \
+  mv /tmp/temporal /usr/local/bin/temporal && \
+  chmod +x /usr/local/bin/temporal && \
+  rm /tmp/temporal_cli.tar.gz
+
+FROM --platform=linux/arm64 alpine:latest AS arm64
+RUN apk add --no-cache curl && \
+  curl -L "https://temporal.download/cli/archive/latest?platform=linux&arch=arm64" -o /tmp/temporal_cli.tar.gz && \
+  tar -xzf /tmp/temporal_cli.tar.gz -C /tmp && \
+  mv /tmp/temporal /usr/local/bin/temporal && \
+  chmod +x /usr/local/bin/temporal && \
+  rm /tmp/temporal_cli.tar.gz
+
+# Create the final image
 FROM alpine:latest
-
-RUN apk add curl
-
-WORKDIR /tmp
-
-RUN curl "https://temporal.download/cli/archive/latest?platform=linux&arch=amd64" -o temporal_cli.tar.gz
-
-RUN tar -xzf temporal_cli.tar.gz
-
-RUN mv temporal /usr/local/bin/temporal && chmod +x /usr/local/bin/temporal
-
-RUN rm temporal_cli.tar.gz
-
+COPY --from=amd64 /usr/local/bin/temporal /usr/local/bin/temporal
+COPY --from=arm64 /usr/local/bin/temporal /usr/local/bin/temporal
 CMD ["temporal", "server", "start-dev", "--db-filename", "/data/temporal.db", "--ip", "0.0.0.0"]
