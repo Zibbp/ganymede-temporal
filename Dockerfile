@@ -17,6 +17,8 @@ RUN apk add --no-cache curl && \
 
 # Create the final image
 FROM alpine:latest
-COPY --from=amd64 /usr/local/bin/temporal /usr/local/bin/temporal
-COPY --from=arm64 /usr/local/bin/temporal /usr/local/bin/temporal
-CMD ["temporal", "server", "start-dev", "--db-filename", "/data/temporal.db", "--ip", "0.0.0.0"]
+COPY --from=amd64 /usr/local/bin/temporal /usr/local/bin/temporal-amd64
+COPY --from=arm64 /usr/local/bin/temporal /usr/local/bin/temporal-arm64
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
