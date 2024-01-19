@@ -1,6 +1,6 @@
 # Use a multi-stage build to build the binary for different platforms
 FROM --platform=linux/amd64 debian:12-slim AS amd64
-RUN apk add --no-cache curl && \
+RUN DEBIAN_FRONTEND=noninteractive apt update && apt install curl -y && \
   curl -L "https://temporal.download/cli/archive/latest?platform=linux&arch=amd64" -o /tmp/temporal_cli.tar.gz && \
   tar -xzf /tmp/temporal_cli.tar.gz -C /tmp && \
   mv /tmp/temporal /usr/local/bin/temporal && \
@@ -8,7 +8,7 @@ RUN apk add --no-cache curl && \
   rm /tmp/temporal_cli.tar.gz
 
 FROM --platform=linux/arm64 debian:12-slim AS arm64
-RUN apk add --no-cache curl && \
+RUN DEBIAN_FRONTEND=noninteractive apt update && apt install curl -y && \
   curl -L "https://temporal.download/cli/archive/latest?platform=linux&arch=arm64" -o /tmp/temporal_cli.tar.gz && \
   tar -xzf /tmp/temporal_cli.tar.gz -C /tmp && \
   mv /tmp/temporal /usr/local/bin/temporal && \
